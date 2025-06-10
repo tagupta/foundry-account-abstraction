@@ -8,12 +8,25 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {SIG_VALIDATION_FAILED, SIG_VALIDATION_SUCCESS} from "@aa/core/Helpers.sol";
 import {IEntryPoint} from "@aa/interfaces/IEntryPoint.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 contract MinimalAccount is IAccount, Ownable {
-    error MinimalAccount__NotFromEntryPoint();
+    using Address for address;
+    /*//////////////////////////////////////////////////////////////
+                                 ERRORS
+    //////////////////////////////////////////////////////////////*/
 
+    error MinimalAccount__NotFromEntryPoint();
+    error MinimalAccount__NotFromEntryPointOrOwner();
+
+    /*//////////////////////////////////////////////////////////////
+                            STATE VARIABLES
+    //////////////////////////////////////////////////////////////*/
     IEntryPoint private immutable i_entryPoint;
 
+    /*//////////////////////////////////////////////////////////////
+                               MODIFIERS
+    //////////////////////////////////////////////////////////////*/
     modifier requirefromEntryPoint() {
         if (msg.sender != address(i_entryPoint)) {
             revert MinimalAccount__NotFromEntryPoint();
@@ -21,9 +34,24 @@ contract MinimalAccount is IAccount, Ownable {
         _;
     }
 
+    modifier requirefromEntryPointOrOWner() {
+        if (msg.sender != address(i_entryPoint) && msg.sender != owner()) {
+            revert MinimalAccount__NotFromEntryPointOrOwner();
+        }
+        _;
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                               FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
     constructor(address entryPoint) Ownable(msg.sender) {
         i_entryPoint = IEntryPoint(entryPoint);
     }
+
+    receive() external payable {}
+    /*//////////////////////////////////////////////////////////////
+                           EXTERNAL FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
         external
@@ -35,6 +63,15 @@ contract MinimalAccount is IAccount, Ownable {
         //missingAccountFunds - gas cost for calling this transaction and you need to payback to whoever sent the transaction
         _payPrefund(missingAccountFunds);
     }
+
+    //the external calls are made to the dapp
+    function execute(address dst, uint256 value, bytes calldata functionData) external requirefromEntryPointOrOWner {
+        dst.functionCallWithValue(functionData, value);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                           INTERNAL FUNCTION
+    //////////////////////////////////////////////////////////////*/
 
     //userOpHash: EIP-191 version of the signed hash
     function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash)
@@ -53,8 +90,7 @@ contract MinimalAccount is IAccount, Ownable {
 
     function _payPrefund(uint256 missingAccountFunds) internal {
         if (missingAccountFunds != 0) {
-            (bool success,) = payable(msg.sender).call{value: missingAccountFunds, gas: type(uint256).max}("");
-            (success);
+            Address.sendValue(payable(msg.sender), missingAccountFunds);
         }
     }
     /*//////////////////////////////////////////////////////////////
