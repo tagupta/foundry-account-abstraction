@@ -15,6 +15,7 @@ contract HelperConfig is Script {
     uint256 constant ZKSYNC_SEPOLIA_CHAINID = 300;
     uint256 constant LOCAL_CHAINID = 31337;
     address constant BURNER_WALLET = 0x0f5eEcc25c3C1C1Ac35bFe83f0635391a7Bfe36A;
+    address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
@@ -46,13 +47,18 @@ contract HelperConfig is Script {
     }
 
     function _getZksyncSepoliaNewtorkConfig() internal pure returns (NetworkConfig memory) {
-        return NetworkConfig(address(0),BURNER_WALLET);
+        return NetworkConfig(address(0), BURNER_WALLET);
     }
 
     function getOrCreateAnvilEthConfig() internal returns (NetworkConfig memory) {
         if (localNetworkConfig.account != address(0)) {
             return localNetworkConfig;
         }
-        // deploy a mock entry point contract
+        //deploy mocks
+        localNetworkConfig = NetworkConfig({
+            entryPoint: address(0),
+            account: FOUNDRY_DEFAULT_SENDER
+        });
+        return localNetworkConfig;
     }
 }

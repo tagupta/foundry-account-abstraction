@@ -6,12 +6,11 @@ import {MinimalAccount} from "src/ethereum/MinimalAccount.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
 
 contract DeployMinimal is Script {
-
-    function run() external {
-        deployMinimalAccount();
+    function run() external returns (HelperConfig, MinimalAccount) {
+        return deployMinimalAccount();
     }
 
-    function deployMinimalAccount() public {
+    function deployMinimalAccount() public returns (HelperConfig, MinimalAccount) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = helperConfig.getConfig();
 
@@ -19,5 +18,6 @@ contract DeployMinimal is Script {
         MinimalAccount minimalAccount = new MinimalAccount(networkConfig.entryPoint);
         minimalAccount.transferOwnership(msg.sender);
         vm.stopBroadcast();
+        return (helperConfig, minimalAccount);
     }
 }
