@@ -2,20 +2,24 @@
 pragma solidity ^0.8.25;
 
 import {Script} from "forge-std/Script.sol";
+import {EntryPoint} from "@aa/core/EntryPoint.sol";
 
-contract HelperConfig is Script {
+contract Constants {
+    uint256 constant ETH_SEPOLIA_CHAINID = 11155111;
+    uint256 constant ZKSYNC_SEPOLIA_CHAINID = 300;
+    uint256 constant LOCAL_CHAINID = 31337;
+    address constant BURNER_WALLET = 0x0f5eEcc25c3C1C1Ac35bFe83f0635391a7Bfe36A;
+    // address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+     address constant ANVIL_DEFAULT_WALLET =  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+}
+
+contract HelperConfig is Script, Constants {
     error HelperConfig__InvalidChainId();
 
     struct NetworkConfig {
         address entryPoint;
         address account;
     }
-
-    uint256 constant ETH_SEPOLIA_CHAINID = 11155111;
-    uint256 constant ZKSYNC_SEPOLIA_CHAINID = 300;
-    uint256 constant LOCAL_CHAINID = 31337;
-    address constant BURNER_WALLET = 0x0f5eEcc25c3C1C1Ac35bFe83f0635391a7Bfe36A;
-    address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
@@ -55,10 +59,10 @@ contract HelperConfig is Script {
             return localNetworkConfig;
         }
         //deploy mocks
-        localNetworkConfig = NetworkConfig({
-            entryPoint: address(0),
-            account: FOUNDRY_DEFAULT_SENDER
-        });
+        vm.startBroadcast(ANVIL_DEFAULT_WALLET);
+        EntryPoint entryPoint = new EntryPoint();
+        vm.stopBroadcast();
+        localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_WALLET});
         return localNetworkConfig;
     }
 }
