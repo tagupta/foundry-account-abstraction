@@ -10,7 +10,7 @@ contract Constants {
     uint256 constant LOCAL_CHAINID = 31337;
     address constant BURNER_WALLET = 0x0f5eEcc25c3C1C1Ac35bFe83f0635391a7Bfe36A;
     // address constant FOUNDRY_DEFAULT_SENDER = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
-     address constant ANVIL_DEFAULT_WALLET =  0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    address constant ANVIL_DEFAULT_WALLET = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 }
 
 contract HelperConfig is Script, Constants {
