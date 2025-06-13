@@ -56,7 +56,7 @@ contract MinimalAccountTest is Test {
         minimalAccount.execute(address(usdc), 0, data);
     }
 
-    function testRecoverSignedOp() external view {
+    function testRecoverSignedOp() external {
         //Arrange
         address dst = address(usdc);
         uint256 value = 0;
@@ -64,7 +64,7 @@ contract MinimalAccountTest is Test {
         bytes memory executeCalldata = abi.encodeCall(MinimalAccount.execute, (dst, value, functionData));
 
         PackedUserOperation memory packedUserOpeartion =
-            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config);
+            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config, address(minimalAccount));
         bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(packedUserOpeartion);
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(userOpHash);
 
@@ -84,7 +84,7 @@ contract MinimalAccountTest is Test {
         bytes memory functionData = abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), USDC_INITIAL_VALUE));
         bytes memory executeCalldata = abi.encodeCall(MinimalAccount.execute, (dst, value, functionData));
         PackedUserOperation memory packedUserOperation =
-            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config);
+            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config, address(minimalAccount));
         bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(packedUserOperation);
         //Act
         uint256 missingAccountFunds = 1e18;
@@ -102,9 +102,9 @@ contract MinimalAccountTest is Test {
         bytes memory functionData = abi.encodeCall(ERC20Mock.mint, (address(minimalAccount), USDC_INITIAL_VALUE));
         bytes memory executeCalldata = abi.encodeCall(MinimalAccount.execute, (dst, value, functionData));
         PackedUserOperation memory packedUserOperation =
-            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config);
+            sendPackedUserOp.generateSignedUserOperation(executeCalldata, config, address(minimalAccount));
         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
-        ops[0] = (packedUserOperation);
+        ops[0] = packedUserOperation;
         vm.deal(address(minimalAccount), MINIMAL_ACCOUNT_BALANCE);
 
         //Act

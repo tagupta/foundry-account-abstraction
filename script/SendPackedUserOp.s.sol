@@ -13,14 +13,15 @@ contract SendPackedUserOp is Script, Constants {
 
     function run() external {}
 
-    function generateSignedUserOperation(bytes memory callData, HelperConfig.NetworkConfig memory networkConfig)
-        external
-        view
-        returns (PackedUserOperation memory)
-    {
+    function generateSignedUserOperation(
+        bytes memory callData,
+        HelperConfig.NetworkConfig memory networkConfig,
+        address minimalAccount
+    ) external returns (PackedUserOperation memory) {
         address entryPoint = networkConfig.entryPoint;
-        address sender = networkConfig.account;
-        uint256 nonce = vm.getNonce(sender);
+        address sender = minimalAccount;
+        uint256 nonce = vm.getNonce(minimalAccount) - 1;
+        //IEntryPoint(entryPoint).getNonce(minimalAccount, 0);
         //generate the unsigned packed userOps
         PackedUserOperation memory userOp = _generateUnSignedUserOperation(callData, sender, nonce);
         //get the user operation hash
@@ -34,10 +35,11 @@ contract SendPackedUserOp is Script, Constants {
         if (block.chainid == LOCAL_CHAINID) {
             (v, r, s) = vm.sign(ANVIL_DEFAULT_KEY, digest);
         } else {
-            (v, r, s) = vm.sign(sender, digest);
+            (v, r, s) = vm.sign(networkConfig.account, digest);
         }
 
         userOp.signature = abi.encodePacked(r, s, v);
+        IEntryPoint(entryPoint).incrementNonce(0);
         return userOp;
     }
 
