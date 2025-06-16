@@ -11,7 +11,12 @@ import {Constants} from "script/HelperConfig.s.sol";
 contract SendPackedUserOp is Script, Constants {
     using MessageHashUtils for bytes32;
 
-    function run() external {}
+    function run() external {
+        //get the usdc address of the specified chain
+        //get the minimal contract address over that chain.
+        //get the pakedUser opeartion using generateSignedUserOperation()
+        //call handle ops function of entryPoint contract address. 
+    }
 
     function generateSignedUserOperation(
         bytes memory callData,
