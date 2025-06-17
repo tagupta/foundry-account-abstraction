@@ -15,7 +15,7 @@ contract SendPackedUserOp is Script, Constants {
         //get the usdc address of the specified chain
         //get the minimal contract address over that chain.
         //get the pakedUser opeartion using generateSignedUserOperation()
-        //call handle ops function of entryPoint contract address. 
+        //call handle ops function of entryPoint contract address.
     }
 
     function generateSignedUserOperation(

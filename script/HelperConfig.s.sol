@@ -19,8 +19,8 @@ contract HelperConfig is Script, Constants {
     struct NetworkConfig {
         address entryPoint;
         address account;
-        //address usdc
     }
+    //address usdc
 
     NetworkConfig public localNetworkConfig;
     mapping(uint256 chainId => NetworkConfig) public networkConfigs;
